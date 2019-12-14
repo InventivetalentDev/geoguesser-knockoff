@@ -1,5 +1,9 @@
 <?php
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 $token = $_GET["token"];
 $gameid = $_GET["gameid"];
 if (empty($token) || !isset($gameid)) {
@@ -74,9 +78,10 @@ if ($json["status"] === "OK") {
 
 
     $date = date("Y-m-d H:i:s");
-    $stmt = $conn->prepare("INSERT INTO geoguesser_guesses (game,lat,lng,time,distance) VALUES(?,?,?,?,?)");
-    $stmt->bind_param("sddsd", $dbGameId, $guessLat, $guessLon, $date, $distance);
+    $stmt = $conn->prepare("INSERT INTO geoguesser_guesses (game,lat,lng,time,distance) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE time=?");
+    $stmt->bind_param("sddsds", $dbGameId, $guessLat, $guessLon, $date, $distance,$date);
     $stmt->execute();
+    $last_id = $conn->insert_id;
     $stmt->close();
     unset($stmt);
 
@@ -133,7 +138,7 @@ $conn->close();
     <body>
             <div id="map"></div>
 
-        <a href="/game" class="btn" style="position: absolute; bottom: 40px; right: 40px; z-index: 9999;">Play!</a>
+        <a href="/game" class="btn" style="position: absolute; bottom: 40px; right: 40px; z-index: 9999;">Play Again!</a>
 
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -145,10 +150,13 @@ $conn->close();
                 echo "let res = " . json_encode($res) . ";";
             }
             ?>
+            let gameId = <?php echo $dbGameId; ?>;
+            let guessId = <?php echo $last_id; ?>;
 
 
+            let map;
             function initMap() {
-                let map = new L.Map('map', {});
+                map = new L.Map('map', {});
                 let osm = new L.TileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png', {
                     minZoom: 2,
                     maxZoom: 20,
@@ -220,6 +228,35 @@ $conn->close();
             if (res) {
                 initMap();
             }
+
+
+            let otherGuessCount =0;
+            function updateOtherGuesses(guesses) {
+                let diff = guesses.length-otherGuessCount;
+                if (diff > 0) {
+                    for (let i = 0; i < diff; i++) {
+                        let guess = guesses[guesses.length - i];
+                        let otherMarker = new L.Marker([guess.lat, guess.lng], {
+                            opacity:0.2,
+                            icon: L.icon({
+                                iconUrl: "/img/self_marker_24px.svg",
+                                iconSize: new L.Point(24, 24)
+                            })
+                        });
+                        otherMarker .bindTooltip("Other Player Guess",
+                            {
+                                permanent: true,
+                                direction: 'right',
+                                offset: new L.Point(10,0)
+                            });
+                        otherMarker.addTo(map);
+                    }
+                }
+            }
+
+            setInterval(function () {
+                $.get("otherGuesses.php?gameid="+gameId+"&selfGuess="+guessId)
+            }, 30000);
 
         </script>
     </body>
