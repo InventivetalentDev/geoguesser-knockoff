@@ -1,0 +1,4 @@
+.idea/*
+*.iml
+db_stuff.php
+vars.php
