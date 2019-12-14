@@ -16,14 +16,21 @@ $guessLon = floatval($_GET["lng"]);
 
 include "../../db_stuff.php";
 
-$stmt = $conn->prepare("SELECT id,lat,lng,creation_time FROM geoguesser_games WHERE token = ?");
+$stmt = $conn->prepare("SELECT id,startLat,startLng,lat,lng,creation_time FROM geoguesser_games WHERE token = ?");
 $stmt->bind_param("s", $token);
 $stmt->execute();
-$stmt->bind_result($dbGameId, $startLat, $startLng, $creation_time);
+$stmt->bind_result($dbGameId, $startLat, $startLng, $fallbackLat,$fallbackLng, $creation_time);
 $valid = $stmt->fetch();
 $stmt->close();
 unset($stmt);
 
+
+if (empty($startLat) || $startLat == 0) {
+    $startLat= $fallbackLat;
+}
+if (empty($startLng) || $startLng == 0) {
+    $startLng = $fallbackLng;
+}
 
 if (!$valid) {
     $conn->close();
@@ -126,7 +133,7 @@ $conn->close();
     <body>
             <div id="map"></div>
 
-        <a href="/game" class="btn" style="position: absolute; bottom: 20px; right: 20px;">Play!</a>
+        <a href="/game" class="btn" style="position: absolute; bottom: 40px; right: 40px; z-index: 9999;">Play!</a>
 
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -148,13 +155,7 @@ $conn->close();
                     attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
                 });
                 map.addLayer(osm);
-                map.setView(new L.LatLng(0, 0), 1);
-
-                let dots = [
-                    [res.start.lat, res.start.lng],
-                    [res.actual.lat, res.actual.lng],
-                    [res.guess.lat, res.guess.lng],
-                ];
+                map.setView(new L.LatLng(res.guess.lat, res.guess.lng), 10);
 
 
                 let guessMarker = new L.Marker([res.guess.lat, res.guess.lng], {
@@ -199,8 +200,20 @@ $conn->close();
                     });
                 targetMarker.addTo(map);
 
-
-                L.polyline(dots).addTo(map);
+                let dots = [
+                    [res.actual.lat, res.actual.lng],
+                    [res.guess.lat, res.guess.lng],
+                ];
+                if(res.actual.lat!==res.start.lat&&res.actual.lng!==res.start.lng){
+                    dots.unshift([res.start.lat, res.start.lng]);
+                }else{
+                    startMarker.setOpacity(0);
+                }
+                L.polyline(dots).bindTooltip((Math.round(res.distanceInKilometers*100.0)/100.0)+"km",{
+                    permanent: true,
+                    direction:"left",
+                    offset: new L.Point(-5,0)
+                }).addTo(map);
 
             }
 

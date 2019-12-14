@@ -223,6 +223,11 @@ if (isset($_GET["g"])) {
                     // console.log(data)
                     if(status==="OK") {
                         panorama.setPano(data.location.pano);
+
+                        $.post("startPano.php",{
+                            pano:data.location.pano,
+                            token: token
+                        });
                     }
                 })
 
