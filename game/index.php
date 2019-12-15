@@ -103,10 +103,11 @@ if (isset($_GET["g"])) {
 
     $geojson = json_decode(file_get_contents(__DIR__."/../data/ne_10m_land.json"),true);
 
-    $latMin = -60;
-    $latMax = 80;
-    $lngMin = -170;
-    $lngMax = 170;
+    // try to avoid antarctica and the less-populated edges
+    $latMin = -58;
+    $latMax = 72;
+    $lngMin = -160;
+    $lngMax = 160;
 
     $lat = rand($latMin*1000.0,$latMax*1000.0)/1000.0;
     $lng = rand($lngMin*1000.0,$lngMax*1000.0)/1000.0;
@@ -212,7 +213,7 @@ if (isset($_GET["g"])) {
                 console.log(JSON.parse(atob('<?php echo base64_encode(json_encode(array("lat"=>(float)$lat,"lng"=>(float)$lng))); ?>')));
                 sv.getPanorama({
                     location:JSON.parse(atob('<?php echo base64_encode(json_encode(array("lat"=>(float)$lat,"lng"=>(float)$lng))); ?>')),
-                    radius:20000,
+                    radius:50000,
                     source:"outdoor",
                     preference:"best"
                 },function (data,status) {
