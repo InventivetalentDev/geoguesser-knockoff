@@ -87,14 +87,19 @@ function isPointOnLand($point, $geojson){
 if (isset($_GET["g"])) {
     $token = $_GET["g"];
 
-    $stmt = $conn->prepare("SELECT id,lat,lng,creation_time FROM geoguesser_games WHERE token = ?");
+    $stmt = $conn->prepare("SELECT id,lat,lng,creation_time,startLat,startLng FROM geoguesser_games WHERE token = ?");
     $stmt->bind_param("s", $token);
     $stmt->execute();
-    $stmt->bind_result($id, $lat,$lng,$creation_time);
+    $stmt->bind_result($id, $lat,$lng,$creation_time,$startLat,$startLng);
     $stmt->fetch();
      $stmt->close();
     unset($stmt);
     $conn->close();
+
+    if (isset($startLat) && isset($startLng)) {
+        $lat = $startLat;
+        $lng = $startLng;
+    }
 
 
 }else{
