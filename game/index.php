@@ -224,7 +224,6 @@ if (isset($_GET["g"])) {
                         }
                     });
 
-                console.log(JSON.parse(atob('<?php echo base64_encode(json_encode(array("lat"=>(float)$lat,"lng"=>(float)$lng))); ?>')));
                 sv.getPanorama({
                     location:JSON.parse(atob('<?php echo base64_encode(json_encode(array("lat"=>(float)$lat,"lng"=>(float)$lng))); ?>')),
                     radius:50000,
