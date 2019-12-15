@@ -166,6 +166,15 @@ if (isset($_GET["g"])) {
                 z-index:9999;
                 width: 30%;
                 height: 30%;
+                opacity: 0.5;
+
+                transition:  opacity .2s ease-in-out, width 0.5s, height 0.5s;
+            }
+
+            #mapAndGuessOverlay:hover{
+                width: 50%;
+                height: 50%;
+                opacity: 1;
             }
         </style>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
