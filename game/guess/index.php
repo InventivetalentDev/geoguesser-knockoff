@@ -232,12 +232,15 @@ $conn->close();
 
             let otherGuessCount =0;
             function updateOtherGuesses(guesses) {
+                console.log(guesses)
                 let diff = guesses.length-otherGuessCount;
                 if (diff > 0) {
                     for (let i = 0; i < diff; i++) {
-                        let guess = guesses[guesses.length - i];
+                        console.log(guesses.length - i-1)
+                        let guess = guesses[guesses.length - i-1];
+                        console.log(guess)
                         let otherMarker = new L.Marker([guess.lat, guess.lng], {
-                            opacity:0.2,
+                            opacity:0.3,
                             icon: L.icon({
                                 iconUrl: "/img/self_marker_24px.svg",
                                 iconSize: new L.Point(24, 24)
@@ -250,13 +253,19 @@ $conn->close();
                                 offset: new L.Point(10,0)
                             });
                         otherMarker.addTo(map);
+
+                        otherGuessCount++;
                     }
                 }
             }
 
-            setInterval(function () {
-                $.get("otherGuesses.php?gameid="+gameId+"&selfGuess="+guessId)
-            }, 30000);
+            function doOtherGuessUpdate() {
+                $.get("otherGuesses.php?gameid="+gameId+"&selfGuess="+guessId,function (data) {
+                    updateOtherGuesses(data.guesses)
+                })
+            }
+            setInterval(doOtherGuessUpdate, 30000);
+            doOtherGuessUpdate();
 
         </script>
     </body>
