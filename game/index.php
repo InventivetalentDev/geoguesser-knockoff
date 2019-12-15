@@ -263,7 +263,8 @@ if (isset($_GET["g"])) {
             function initMap() {
                 let map  = new L.Map('map',{
                 });
-                let osm = new L.TileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png', {
+                let osm = new L.TileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    subdomains:"abc",
                     minZoom: 2,
                     maxZoom: 20,
                     attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'});
